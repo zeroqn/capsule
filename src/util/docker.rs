@@ -174,6 +174,7 @@ impl DockerCommand {
             format!("-eGID={}", gid).as_str(),
             format!("-eUSER={}", user).as_str(),
             "--rm",
+            "--userns=keep-id",
             format!("-v{}:/code", code_path).as_str(),
             format!("-w{}", workdir).as_str(),
         ]);
