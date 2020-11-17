@@ -174,8 +174,9 @@ impl DockerCommand {
             format!("-eGID={}", gid).as_str(),
             format!("-eUSER={}", user).as_str(),
             "--rm",
+            "--user=root",
             "--userns=keep-id",
-            format!("-v{}:/code", code_path).as_str(),
+            format!("-v{}:/code:Z", code_path).as_str(),
             format!("-w{}", workdir).as_str(),
         ]);
 
@@ -190,7 +191,7 @@ impl DockerCommand {
 
         // mapping volumes
         for volumn in mapping_volumes {
-            cmd.arg(format!("-v{}:{}", volumn.volume, volumn.container).as_str());
+            cmd.arg(format!("-v{}:{}:Z", volumn.volume, volumn.container).as_str());
         }
 
         // mapping ports
