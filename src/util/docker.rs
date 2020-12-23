@@ -173,6 +173,7 @@ impl DockerCommand {
             format!("-eUID={}", uid).as_str(),
             format!("-eGID={}", gid).as_str(),
             format!("-eUSER={}", user).as_str(),
+            "-eHOME=/root",
             "--rm",
             "--user=root",
             "--userns=keep-id",
