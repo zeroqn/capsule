@@ -31,6 +31,7 @@ impl FromStr for TemplateType {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Contract {
+    pub prefix_path: Option<String>,
     pub name: String,
     pub template_type: TemplateType,
 }

@@ -31,28 +31,34 @@ impl Rust {
         Self { context }
     }
 
-    fn contract_path(&self, name: &str) -> PathBuf {
+    fn contract_path(&self, contract: &Contract) -> PathBuf {
         let mut path = self.context.contracts_path();
-        path.push(&name);
+        if let Some(ref prefix_path) = contract.prefix_path {
+            path.push(prefix_path);
+        }
+        path.push(&contract.name);
         path
     }
 
-    fn contract_relative_path(&self, name: &str) -> PathBuf {
+    fn contract_relative_path(&self, contract: &Contract) -> PathBuf {
         let mut path = PathBuf::new();
         path.push(CONTRACTS_DIR);
-        path.push(name);
+        if let Some(ref prefix_path) = contract.prefix_path {
+            path.push(prefix_path)
+        }
+        path.push(&contract.name);
         path
     }
 
-    fn has_cargo_config(&self, name: &str) -> bool {
-        let mut contract_path = self.contract_path(name);
+    fn has_cargo_config(&self, contract: &Contract) -> bool {
+        let mut contract_path = self.contract_path(contract);
         contract_path.push(CARGO_CONFIG_PATH);
         contract_path.exists()
     }
 
     /// inject rustflags on release build unless project has cargo config
-    fn injection_rustflags(&self, config: BuildConfig, name: &str) -> String {
-        let has_cargo_config = self.has_cargo_config(name);
+    fn injection_rustflags(&self, config: BuildConfig, contract: &Contract) -> String {
+        let has_cargo_config = self.has_cargo_config(contract);
         match config.build_env {
             _ if has_cargo_config => "".to_string(),
             BuildEnv::Debug => format!("RUSTFLAGS=\"{}\"", BASE_RUSTFLAGS.to_string()),
@@ -115,8 +121,8 @@ impl Rust {
 }
 
 impl Recipe for Rust {
-    fn exists(&self, name: &str) -> bool {
-        self.contract_path(name).exists()
+    fn exists(&self, contract: &Contract) -> bool {
+        self.contract_path(contract).exists()
     }
 
     fn create_contract(
@@ -165,7 +171,7 @@ impl Recipe for Rust {
     /// run command in build image
     fn run(&self, contract: &Contract, build_cmd: String, signal: &Signal) -> Result<()> {
         let project_path = self.context.project_path.to_str().expect("path");
-        let contract_relative_path = self.contract_relative_path(&contract.name);
+        let contract_relative_path = self.contract_relative_path(&contract);
         let cmd = DockerCommand::with_context(
             &self.context,
             self.docker_image(),
@@ -205,7 +211,7 @@ impl Recipe for Rust {
             "{rustflags} {cargo_cmd} build --target {rust_target} {build_env} && \
          ckb-binary-patcher -i {contract_bin} -o {contract_bin}",
             cargo_cmd = self.cargo_cmd(),
-            rustflags = self.injection_rustflags(config, &contract.name),
+            rustflags = self.injection_rustflags(config, &contract),
             rust_target = RUST_TARGET,
             contract_bin = container_bin_path.to_str().expect("bin"),
             build_env = build_cmd_opt

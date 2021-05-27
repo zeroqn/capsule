@@ -153,9 +153,9 @@ impl<R: CRecipe> C<R> {
 }
 
 impl<R: CRecipe> Recipe for C<R> {
-    fn exists(&self, name: &str) -> bool {
+    fn exists(&self, contract: &Contract) -> bool {
         let mut src = self.src_dir();
-        src.push(self.source_name(name));
+        src.push(self.source_name(&contract.name));
         src.exists()
     }
 

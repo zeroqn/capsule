@@ -15,7 +15,7 @@ pub fn get_recipe(context: Context, template_type: TemplateType) -> Result<Box<d
 }
 
 pub trait Recipe {
-    fn exists(&self, name: &str) -> bool;
+    fn exists(&self, contract: &Contract) -> bool;
     fn create_contract(
         &self,
         contract: &Contract,

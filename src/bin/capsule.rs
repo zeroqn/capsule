@@ -221,6 +221,7 @@ fn run_cli() -> Result<()> {
             let project_path = new_project(name.to_string(), path, &signal)?;
             let context = Context::load_from_path(&project_path)?;
             let c = Contract {
+                prefix_path: None,
                 name,
                 template_type,
             };
@@ -234,11 +235,12 @@ fn run_cli() -> Result<()> {
             let template_type: TemplateType =
                 args.value_of("template").expect("template").parse()?;
             let contract = Contract {
+                prefix_path: None,
                 name,
                 template_type,
             };
             let recipe = get_recipe(context.clone(), contract.template_type)?;
-            if recipe.exists(&contract.name) {
+            if recipe.exists(&contract) {
                 return Err(anyhow!("contract '{}' is already exists", contract.name));
             }
             recipe.create_contract(&contract, true, &signal)?;
